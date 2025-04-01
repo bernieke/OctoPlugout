@@ -1,12 +1,12 @@
- /*  OctoPlugout      
+ /*  OctoPlugout
  */
 
 #define Version_major 4
 #define Version_minor 6
- 
+
 /*
  *  v1.0 - 27 oct 2020
- *    Initial release 
+ *    Initial release
  *
  *  v1.1 - 28 oct 2020
  *    Additional state
@@ -14,20 +14,20 @@
  *  v1.2 -  1 nov 2020
  *    Improved state transitions
  *    Avoid pi checking when LED is on
- * 
+ *
  *  v1.3 - Equal to V1.2
  *
  *  v1.4 - 2 nov 2020
  *    State interpretation also when LED is configured to be off
- *    Messages on the LCD of your printer, when 
- *    - plug is connected 
+ *    Messages on the LCD of your printer, when
+ *    - plug is connected
  *    - Print is monitored
  *    - Pi will be shutdwono
  *    - Power will be switched off.
  *
  * v2.1 - 2 nov 2020
  *  - Added an additional state "print started"
- *    This state prevents very short / aborted print jobs (configurable time and reached extruder 
+ *    This state prevents very short / aborted print jobs (configurable time and reached extruder
  *    temperature) to trigger a shutdown/power off
  *    Thnx to Tim for pointing this out!
  *
@@ -39,12 +39,12 @@
  *
  * v2.4 - 10 nov 2020
  * State printing extended
- * - Also statues liking "resuming" "pausing" (in addition to the existing "paused") "Error" are now considered as "job in progress". 
+ * - Also statues liking "resuming" "pausing" (in addition to the existing "paused") "Error" are now considered as "job in progress".
  *   This prevents unexpected sutdowns,e.g. when Octoprint is busy when uploading files.
  *
  * v2.5 - 26 dec 2020
  * State printing more resilient
- * - some states that indicate a print in progress, will NOT respond to a Pi-DOWN message. 
+ * - some states that indicate a print in progress, will NOT respond to a Pi-DOWN message.
  *   This is to prevent premature power-off, when the Pi is too busy to respond.
  *
  * v2.6 - 14 feb 2021
@@ -56,7 +56,7 @@
  * - Switch the printer on using MQTT, also printer and printjob information can be published
  *
  * v3.1 - 4 sep 2021
- * - Ensure the plug also works without MQTT 
+ * - Ensure the plug also works without MQTT
  * - Document README
  *
  * v3.2 - 7 sep 2021
@@ -65,23 +65,23 @@
  *
  * v4.0 - 9 sep 2021
  * - Added functionality to configure parameters and WiFi through webpage http://192.168.4.1
- * 
+ *
  * - Long press (more than 6 seconds) will open a wp portal on Wifi access point "SetupOctoPLugout"
- *   (no credentials needed). When connected, browse to http://192.168.4.1 and set parameters for 
+ *   (no credentials needed). When connected, browse to http://192.168.4.1 and set parameters for
  *   IP address of your printer, its API string, mqtt server/topic root/mqtt user/mqtt password
  *   AND choose your wiFi and enter the password.
- * 
+ *
  v4.1 - 16 sep 2021
  * - To support Wifi / Web portal / mqtt / OTA /debugging the memory size became more important to manage.
  *
- *   - Arduino IDE users must select "1Mb / 128k FS OTA:~438KB" under "flash size" in the "tools" menu. 
+ *   - Arduino IDE users must select "1Mb / 128k FS OTA:~438KB" under "flash size" in the "tools" menu.
  *   - platformio users should load the attached flash definitio in edge.flash.1m128.ld by
  *     entering a line with board_build.ldscript = eagle.flash.1m128.ld in their platformio.ini file.
  *	   The file "eagle.flash.1m128.ld" is added for your convenience as of this v4.0 of OctoPlugout.
  *
- * If this is FS 128k forgotten one OTA update will succeed, but subsequent updates might be required 
+ * If this is FS 128k forgotten one OTA update will succeed, but subsequent updates might be required
  * to use serial. Also the config portal will not work in a stable manner.
- * An indicator is that the update will not accept OTA Auth request and reply with 
+ * An indicator is that the update will not accept OTA Auth request and reply with
  *
  * "[ERROR]: No Answer to our Authentication"
  *
@@ -96,12 +96,12 @@
  * v4.4 21 sep 2021
  * - Enabled config portal
  * - When Wifi is NOT configured (or not working) connect to:
- *       AP (wifi SSID) "SetupOctoplugout" 
+ *       AP (wifi SSID) "SetupOctoplugout"
  * 		 website 		"192.168.4.1 and configure wifi.
  * - Long pressing the button (>6s) will result in fast blinking LED
  *		- When LED is fast blinking:
  *      - Release
- *		- Open http://octoplugout 
+ *		- Open http://octoplugout
  *		- Click "setup" and all parameters can be configured.
  *		- After "save" the plug will reboot and use the new parameters.
  *
@@ -114,35 +114,35 @@
  *
  * *=============================================================================================
  *
- *  An octoprint Arduino (ESP8266) sketch, to transform 
+ *  An octoprint Arduino (ESP8266) sketch, to transform
  *  a SonOff plug into an "intelligent" socket that will safely remove power
  *  from your printer AND the Raspberry Pi which is running octoprint.
  *
- *  After a print has finished and after and the extruder temperature 
+ *  After a print has finished and after and the extruder temperature
  *  is below 50ºC (configurable), a "shutdown" command is invoked to the Raspberry PI.
  *  Next, after 60 seconds (configurable), the power is removed. This
  *  Allows the Pi to safely shutdown.
  *
  *  For this, the ESP8266  connects wirelessly to Octoprint and monitors
- *  the printer status. 
+ *  the printer status.
  *
  *  The ESP8266 in the Sonoff and the Raspberry Pi running the
- *  OctoPrint server can speak to each other. 
+ *  OctoPrint server can speak to each other.
  *
- *  The plug will read your OctoPrint Server, API and 3D printer 
+ *  The plug will read your OctoPrint Server, API and 3D printer
  *  statistics from the OctoPrint API.
  *
  *  You will need the IP or hostname of your OctoPrint server, a
  *  port number (will be 80 unless you are reaching it from an
  *  external source) and your API key from the OctoPrint
- *  installation - http://docs.octoprint.org/en/master/api/general.html#authorization 
+ *  installation - http://docs.octoprint.org/en/master/api/general.html#authorization
  *
  *  Allthough the used API needed CORS, I found that the functions I use in the plug
  *  also work fine without. I could only connect by specifying its IP address, not through its hostname.
  *  Consider allowing CORS if you have trouble.
- * 
+ *
  *  To enable CORS - http://docs.octoprint.org/en/master/api/general.html#cross-origin-requests
- * 
+ *
  *  OctoPlugout:  By Ruud Rademaker   ruud dot rademaker at gmail dot com
  *
  *  OctoPrintAPI: By Stephen Ludgate https://www.youtube.com/channel/UCVEEuAouZ6ua4oetLjjHAuw
@@ -168,7 +168,7 @@
  *  51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA.
  *
  *******************************************************************/
- 
+
  /* vvvvvvvvvvvvvvv   COPY BELOW LINES INTO https://state-machine-cat.js.org/  vvvvvvvvvvvvvv
 
 "unplugged",
@@ -186,7 +186,7 @@
 #
 #use https://state-machine-cat.js.org/ to visualize these lines and see the states.
 
-"plugged" 
+"plugged"
 { "0: Relay OFF" [color="#ee2222"],  "Relay ON"  {
 
 //======================== Switched based transitions (blue)
@@ -206,7 +206,7 @@
   "5: ready for shutting down HOT" => "6: shut down PI" [color="blue"] :  Temp-;
 //"5: ready for shutting down HOT" => "7: delayed powering relay off" [color="blue"] :  Pi-;
 
-  "6: shut down PI" => "7: delayed powering relay off" [color="blue"] :  Pi-; 
+  "6: shut down PI" => "7: delayed powering relay off" [color="blue"] :  Pi-;
 
   "7: delayed powering relay off" => "3: waiting for printactivity (connected)" [color="blue"] :  Pi+  ;
 
@@ -220,7 +220,7 @@
 //======================== Switched based transitions (red and green)
 
   "1: Switched ON" => "2: Waiting for print activity" [color="#008800"] : SP;
-  "1: Switched ON" => "8: Going down" [color="#ee2222"] :  LP; 
+  "1: Switched ON" => "8: Going down" [color="#ee2222"] :  LP;
 
   "2: Waiting for print activity" => "1: Switched ON"[color="#008800"]  : SP;
   "2: Waiting for print activity" => "8: Going down" [color="#ee2222"] : LP;
@@ -253,7 +253,7 @@
 "unplugged" => "1: Switched ON" [color="purple"] : plug in;
 
 */ //^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^ END OF LINES TO VISUALIZE THE STATE DIAGRAM
- 
+
 
 #include <OctoPrintAPI.h> //This is where the magic happens... shazam!
 
@@ -288,7 +288,7 @@
 
 #include <EEPROM.h>
 
-//WiFiManager & parameters, Global intialization. 
+//WiFiManager & parameters, Global intialization.
 WiFiManager wm;
 
 unsigned int  timeout   = 120; // seconds to run for
@@ -300,7 +300,7 @@ bool requestConfig		= false;
 WiFiManagerParameter octopi_api;
 WiFiManagerParameter octopi_ip;
 
-#ifdef def_mqtt_server			
+#ifdef def_mqtt_server
 WiFiManagerParameter mqtt_server;
 WiFiManagerParameter mqtt_topic;
 WiFiManagerParameter mqtt_user;
@@ -339,11 +339,11 @@ WiFiManagerParameter mqtt_port;
 #define MinMQTTconnectInterval 60000
 #endif
 
-#ifndef LED_blink_flash 
+#ifndef LED_blink_flash
 #define LED_blink_flash false
 #endif
 
-#ifndef LED_blink_initial 
+#ifndef LED_blink_initial
 #define LED_blink_initial false
 #endif
 
@@ -356,10 +356,10 @@ WiFiManagerParameter mqtt_port;
 #endif
 
 // Both sockets must be different, or API calls will disconnect the MQTT client.
-WiFiClient API_client; 
+WiFiClient API_client;
 
 #ifdef def_mqtt_server
-WiFiClient MQTT_client; 
+WiFiClient MQTT_client;
 
 PubSubClient MQTTclient(MQTT_client);
 
@@ -405,7 +405,7 @@ bool mqtt_active = true;	//By setting the mqtt_server to "" (or "none") you can 
 //====================================================================== Type & Functions ==================
 // OctoPlugout types and functions
 //====================================================================== State names =======================
-// DO NOT UPDATE the state names! 
+// DO NOT UPDATE the state names!
 // Make sure your "blinking definition" in the config has 9 entries (0..8): one for each state.
 
 enum state {
@@ -414,7 +414,7 @@ enum state {
   Waiting_for_print_activity,
   Waiting_for_print_activity_connected,
   ready_for_shutting_down,
-  ready_for_shutting_down_extruder_HOT,  
+  ready_for_shutting_down_extruder_HOT,
   shutting_down_PI,
   delayed_powering_relay_off,
   going_down,
@@ -449,7 +449,7 @@ OctoprintApi* api=0;
 #define L_mqtt_topic	52
 #define L_mqtt_user		16
 #define L_mqtt_pass		16
-#define L_mqtt_port		 2	
+#define L_mqtt_port		 2
 
 #define S_salt			0
 #define S_octopi_api 	0 + S_salt   	  + L_salt
@@ -512,14 +512,14 @@ char *OctoplugoutState(state OctoPO_State) {
 	case Waiting_for_print_activity: 			return((char *)"Waiting_for_print_activity");
 	case Waiting_for_print_activity_connected: 	return((char *)"Waiting_for_print_activity_connected");
 	case ready_for_shutting_down:				return((char *)"ready_for_shutting_down");
-	case ready_for_shutting_down_extruder_HOT:	return((char *)"ready_for_shutting_down_extruder_HOT");  
+	case ready_for_shutting_down_extruder_HOT:	return((char *)"ready_for_shutting_down_extruder_HOT");
 	case shutting_down_PI:						return((char *)"shutting_down_PI");
 	case delayed_powering_relay_off:			return((char *)"delayed_powering_relay_off");
 	case going_down:							return((char *)"going_down");
 	case print_started:							return((char *)"print_started");
 	case nothing:								return((char *)"nothing");
 	};
-	
+
 	return ((char *)"");
 }
 
@@ -545,7 +545,7 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length) {
 		Serial.print(topic);
 		Serial.print("] [");
 		#endif
-		
+
 		String MessageReceived = "";
 		for (unsigned int i = 0; i < length; i++) {
 			#ifdef debug_
@@ -557,7 +557,7 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length) {
 		#ifdef debug_
 		Serial.println("]");
 		#endif
-		
+
 		// Set State following the message received.
 		std::string TopicSwitch = s_mqtt_topic;
 		TopicSwitch += topic_OnOffSwitch;
@@ -566,7 +566,7 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length) {
 	/*
 		strcpy(TopicSwitch,s_mqtt_topic);
 		strcat(TopicSwitch,topic_OnOffSwitch);
-	*/	
+	*/
 		if (TopicReceived == TopicSwitch) {
 			if ((MessageReceived == "ON") or (MessageReceived == "AFTERJOB")) {
 				PublishMQTT(s_mqtt_topic,"/DEBUG","--------------> ON");
@@ -585,8 +585,8 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length) {
 				StateMQTT = nothing;
 				#ifdef debug_
 				//Serial.println(F("No message detected, received: " + MessageReceived));
-				#endif		
-			}	
+				#endif
+			}
 		} else {
 			#ifdef debug_
 			//Serial.println(F("No topic detected"));
@@ -596,7 +596,7 @@ void MQTTcallback(char* topic, byte* payload, unsigned int length) {
 			//Serial.println("<<<");
 			#endif
 		}
-	}		
+	}
 }
 #endif
 
@@ -607,9 +607,9 @@ bool reconnect_mqtt() {
 		return false;
 	} else {		//mqtt configured, active and a connection is desired, but not there.
 
-		unsigned long Now = millis(); 
+		unsigned long Now = millis();
 		if (Now-(unsigned long)MinMQTTconnectInterval< LastMQTTconnectattempt){ //Do not try to reconnect too often
-			return false;	
+			return false;
 		} else {
 			LastMQTTconnectattempt = Now;
 			// Try (just once) to reconnected if necessary
@@ -623,7 +623,7 @@ bool reconnect_mqtt() {
 				#ifdef debug_
 				Serial.println(F("Attempting MQTT connection..."));
 				#endif
-				// The config might have changed....			
+				// The config might have changed....
 				MQTTclient.setServer(s_mqtt_server, i_mqtt_port);
 
 
@@ -641,11 +641,11 @@ bool reconnect_mqtt() {
 					Serial.print(F(" connected to MQTT server "));
 					Serial.println(s_mqtt_server);
 					#endif
-					
+
 					//prevent retained switch messages from harming: put in our "own" harmless message once.
 					//PublishMQTT(s_mqtt_topic,topic_OnOffSwitch,"-",true);
-					
-					// Resubscribe			
+
+					// Resubscribe
 					if (SubscribeMQTT(s_mqtt_topic,(char *)topic_OnOffSwitch)) {
 						#ifdef debug_
 						Serial.print (F("Subscribed "));
@@ -680,12 +680,12 @@ bool reconnect_mqtt() {
 }
 
 // SALT is save to eeprom, if it is wrong, it assumed to be corrupted and reinitialized
-#ifdef def_mqtt_server		
+#ifdef def_mqtt_server
 	#define SALT 5928
 	#define L_EEPROM  9 + 2 + L_octopi_api + L_octopi_ip + L_mqtt_server + L_mqtt_user + L_mqtt_pass + L_mqtt_topic + L_mqtt_port
 #else
 	#define SALT 5929	// By making SALTs different, EEPROM is reinitialized when mqtt_server mode is selected.
-	#define L_EEPROM  2 + 2 + L_octopi_api + L_octopi_ip 
+	#define L_EEPROM  2 + 2 + L_octopi_api + L_octopi_ip
 	#endif
 
 void EEPROMputs(int strEEPROM, const char *save) {
@@ -706,8 +706,8 @@ void eeprom_saveconfig()
 	EEPROM.begin(L_EEPROM);
 	EEPROM.put(0, salt);
 	EEPROMputs(S_octopi_api, s_octopi_api);
-	EEPROMputIP(S_octopi_ip, ip_octopi_ip, L_octopi_ip);  
-	#ifdef def_mqtt_server		  
+	EEPROMputIP(S_octopi_ip, ip_octopi_ip, L_octopi_ip);
+	#ifdef def_mqtt_server
 	EEPROMputs(S_mqtt_server, s_mqtt_server);
 	EEPROMputs(S_mqtt_topic, s_mqtt_topic);
 	EEPROMputs(S_mqtt_user, s_mqtt_user);
@@ -724,10 +724,10 @@ void eeprom_saveconfig()
 	} else {
 		mqtt_active = true;
 	}
-	#endif	
+	#endif
 }
 
-void eeprom_read() 
+void eeprom_read()
 {
 	short salt;
 	EEPROM.begin(L_EEPROM);
@@ -736,12 +736,12 @@ void eeprom_read()
 	//Serial.print(salt);
 	//Serial.print(" with ");
 	//Serial.println(SALT);
-	
+
 	if (salt == SALT) {
-		//Serial.println(F("Reading EEPROM")); 
+		//Serial.println(F("Reading EEPROM"));
 		EEPROM.get(S_octopi_api, s_octopi_api);
 		for (byte i=0;i<4;i++) EEPROM.get(S_octopi_ip + i,ip_octopi_ip[i]);
-		#ifdef def_mqtt_server		
+		#ifdef def_mqtt_server
 		EEPROM.get(S_mqtt_server, s_mqtt_server);
 		EEPROM.get(S_mqtt_topic, s_mqtt_topic);
 		EEPROM.get(S_mqtt_user, s_mqtt_user);
@@ -751,16 +751,16 @@ void eeprom_read()
 			mqtt_active = false;
 		} else {
 			mqtt_active = true;
-		}		
+		}
 		#endif
-		
+
 		#ifdef debug_
 		Serial.print(F("Retrieved from EEPROM"));
 		#endif
-		
+
 		EEPROM.end();
 	} else {
-		
+
 		EEPROM.end();
 		//Serial.println(F("Initializing EEPROM from defaults"));
 		strcpy (s_octopi_api, def_octoprint_apikey);
@@ -775,7 +775,7 @@ void eeprom_read()
 			//Serial.println(ip_octopi_ip);
 			#endif
 		}
-		#ifdef def_mqtt_server		
+		#ifdef def_mqtt_server
 		strcpy (s_mqtt_server, def_mqtt_server);
 		strcpy (s_mqtt_topic, def_mqtt_topic);
 		strcpy (s_mqtt_user, def_mqtt_user);
@@ -783,16 +783,16 @@ void eeprom_read()
 		i_mqtt_port = def_mqtt_port;
 		#endif
 		eeprom_saveconfig();
-		
+
 		#ifdef def_mqtt_server
 		if (((byte)s_mqtt_server[0]==0) or (strcmp(s_mqtt_server,"none")==0)) {
 			mqtt_active = false;
 		} else {
 			mqtt_active = true;
-		}	
-		#endif	
-		
-	};	  	  
+		}
+		#endif
+
+	};
 }
 
 String getParam(String name){
@@ -829,24 +829,24 @@ void saveParamCallback(){
 	Serial.print(F("octopi server @: "));
 	Serial.println(ip_octopi_ip);
 	#endif
-	
+
 	eeprom_saveconfig();
-	
+
 	delay(2000);
 	//restart
 	ESP.restart();
 	while(true) delay(10);	//Do not continue
-	
+
 }
 
 
 void setup_handle_autoconnect() {
 
 //		wm.startConfigPortal("SetupOctoPlugout","pass1234"); // no password protected ap
-//BUG?? In WiFimanager: configportal crashed the ESP on saving the param screen, 
+//BUG?? In WiFimanager: configportal crashed the ESP on saving the param screen,
 //      so for now erase wifi and autoconnect if you want the portal.
-	wm.setCountry(WiFiCountry); 
-	
+	wm.setCountry(WiFiCountry);
+
 	// set Hostname
 	wm.setHostname("SetupOctoPlugout");
 
@@ -857,15 +857,15 @@ void setup_handle_autoconnect() {
     // if connection fails, it starts an access point with the specified name ( "AutoConnectAP"),
     // if empty will auto generate SSID, if password is blank it will be anonymous AP (wm.autoConnect())
     // then goes into a blocking loop awaiting configuration and will return success result
-	
+
     // res = wm.autoConnect(); // auto generated AP name from chipid
     // res = wm.autoConnect("AutoConnectAP"); // anonymous ap
-	
+
 	//Serial.println(F("going to autoconnect"));
 	new (&octopi_api) WiFiManagerParameter("O_API", "octopi API", s_octopi_api, L_octopi_api);
 	new (&octopi_ip) WiFiManagerParameter("O_IP", "octopi ip", ip_octopi_ip.toString().c_str(), L_octopi_ip*4);
 
-	#ifdef def_mqtt_server			
+	#ifdef def_mqtt_server
 	new (&mqtt_server) WiFiManagerParameter("M_server", "mqtt server", s_mqtt_server, L_mqtt_server);
 	new (&mqtt_topic) WiFiManagerParameter("M_topic", "mqtt topic", s_mqtt_topic, L_mqtt_topic);
 	new (&mqtt_user) WiFiManagerParameter ("M_user", "mqtt user", s_mqtt_user, L_mqtt_user);
@@ -874,37 +874,37 @@ void setup_handle_autoconnect() {
 	new (&mqtt_port) WiFiManagerParameter ("M_port", "mqtt port", msg, MSG_BUFFER_SIZE);
 	#endif
 
-	wm.addParameter(&octopi_ip);	
-	wm.addParameter(&octopi_api);	
+	wm.addParameter(&octopi_ip);
+	wm.addParameter(&octopi_api);
 
-	#ifdef def_mqtt_server		
+	#ifdef def_mqtt_server
 	wm.addParameter(&mqtt_server);
 	wm.addParameter(&mqtt_port);
 	wm.addParameter(&mqtt_user);
 	wm.addParameter(&mqtt_pass);
 	wm.addParameter(&mqtt_topic);
 	#endif
-	
+
     //wm.setConfigPortalBlocking(true);
     wm.setSaveParamsCallback(saveParamCallback);
-	
+
 //	std::vector<const char *> menu = {"wifi","info","sep","restart","exit"};
 	std::vector<const char *> menu = {"wifi","info","param","sep","restart","exit"};
 //	std::vector<const char *> menu = {"info","param","sep","restart","exit"};
 	wm.setMenu(menu);
-	
+
 	// set dark theme
-	wm.setClass("invert");	
+	wm.setClass("invert");
 
 	wm.setConfigPortalTimeout(180); // auto close configportal after n seconds
 	//wm.setCaptivePortalEnable(false); // disable captive portal redirection
 	wm.setTimeout(60); // Wait in config portal, before trying the original wifi again.
 	//wm.setCaptivePortalEnable(false); // disable captive portal redirection
 	wm.setAPClientCheck(true); // avoid timeout if client connected to softap
-	
+
 	wm.autoConnect("SetupOctoplugout");
 }
-	
+
 
 void setup () {
   // initialize digital pins for Sonoff
@@ -921,7 +921,7 @@ void setup () {
 	Serial.begin(115200);
 	delay(1000);
 	Serial.flush();
-	
+
 	#if LED_blink_initial==true
 	// do a fancy thing with our board led when starting up
 	/* It was distracting and delaying sorry...
@@ -955,7 +955,7 @@ void setup () {
 	 would try to act as both a client and an access-point and could cause
 	 network-issues with your other WiFi-devices on your WiFi-network. */
 	WiFi.mode(WIFI_STA);
-	
+
 	//Set the hostname
 	ArduinoOTA.setHostname(op_hostname);
 	#ifdef OTApass
@@ -975,7 +975,7 @@ void setup () {
 
 
   });
-  
+
   ArduinoOTA.onEnd([]() {
 	Serial.println("\nEnd");
 	#ifdef PinLED
@@ -983,20 +983,20 @@ void setup () {
 	digitalWrite(PinLED, LED_on ? LED_ON: LED_OFF);  // The LED is off...
 	#endif
   });
-  
+
   ArduinoOTA.onProgress([](unsigned int progress, unsigned int total) {
 	#ifdef PinLED
 	// switch off all the PWMs during upgrade
 	analogWrite(PinLED, 0);
 	#endif
-  
+
     Serial.printf("Progress: %u%%\r", (progress / (total / 100)));
 	#ifdef PinLED
 		if ((LED_count++ % 2) == 0) LED_on = not LED_on;
 		digitalWrite(PinLED, LED_on ? LED_OFF: LED_ON);  // The LED is blinks during uploading...
 	#endif
   });
-  
+
   ArduinoOTA.onError([](ota_error_t error) {
 	Serial.printf("Error[%u]: ", error);
     if (error == OTA_AUTH_ERROR) {
@@ -1011,7 +1011,7 @@ void setup () {
       Serial.println(F("End Failed"));
     }
   });
-  ArduinoOTA.begin();  
+  ArduinoOTA.begin();
 
 //Initial state and timers for OctoPrintPlugout
 
@@ -1030,10 +1030,10 @@ void setup () {
 
     //reset settings - wipe credentials for testing
     //wm.resetSettings();
-	
+
 	//read from EEPROM, these are the defaults (for the non-wifi parameters)
 	eeprom_read();
-	
+
 	#ifdef debug_
 	Serial.println(F("[EEPROM] settings retrieved:"));
 	Serial.print(F("O_API          = "));
@@ -1053,7 +1053,7 @@ void setup () {
 	#endif
 
 	// wm.setBreakAfterConfig(true);   // always exit configportal even if wifi save fails
-	
+
 	// Show information on the Serial port
 	#ifdef debug_
 	wm.setDebugOutput(true);
@@ -1065,7 +1065,7 @@ void setup () {
 	#else
 	wm.setDebugOutput(false);
 	#endif
-	
+
 	setup_handle_autoconnect();
 
 	// Always define octopi server through its IP address.
@@ -1082,10 +1082,10 @@ void doWiFiManager(){
       portalRunning = false;
       if(startAP){
         wm.stopConfigPortal();
-      }  
+      }
       else{
         wm.stopWebPortal();
-      } 
+      }
    }
   }
 
@@ -1102,27 +1102,27 @@ void doWiFiManager(){
 		Serial.println(F("Button Pressed, Starting Web Portal"));
 		#endif
 		wm.startWebPortal();
-	}  
+	}
 	portalRunning = true;
 	startTimePortal = millis();
 	}
 }
 
 void loop() {
-	
+
 	unsigned long Now = millis();
-	
+
 	#ifdef ESP8266
 	MDNS.update();
 	#endif
-	
+
 	doWiFiManager();
-	
+
 	ArduinoOTA.handle();
-	
+
 	#ifdef def_mqtt_server
 	bool mqtt_connected = false;
-	
+
 	if (mqtt_active) {
 		if (MQTTclient.connected()) {
 			//Serial.println(F("In loop: mqtt is CONNECTED"));
@@ -1154,7 +1154,7 @@ void loop() {
 			if ( IntervalLED == 0) {  // This led should NEVER be on...
 				LED_on = false;
 				IntervalLED = 1000;
-				State_transition_checking_ok = true;	// Ensures the LED is OFF while checking the state, only necessary 
+				State_transition_checking_ok = true;	// Ensures the LED is OFF while checking the state, only necessary
 														// for people who configure a state without LED on that should interpret Pi state.
 			}
 		} else {				//Set the time the LED should be OFF
@@ -1165,9 +1165,9 @@ void loop() {
 		digitalWrite(PinLED, LED_on ? LED_ON: LED_OFF);	// Actually switch the LED on or Off, depending on LED_on.
 
 	}
-	
+
 	// Evaluate button: debouncing after it is pressed
-	
+
 	#define CrazyLED_int 200
 	ShortPress = LongPress = false; // Reset
 	if ((Now - LastPressed) > debounce_interval) {
@@ -1190,10 +1190,10 @@ void loop() {
 						CrazyLED = Now;
 						CrazyLED_on = !CrazyLED_on;
 						digitalWrite(PinLED, CrazyLED_on ? LED_ON: LED_OFF);
-					}					
+					}
 				}
-			}				
-			
+			}
+
 		} else {
 			if (digitalRead(PinButton) == BUTTON_PRESSED) { 			//This means the button is (now) pressed
 				ButtonPressed = true;
@@ -1205,14 +1205,14 @@ void loop() {
 	// Initialize message on LCD of the printer
 	char Message[40];
 	Message[0] = '\0';
-	
+
 	// Interpret buttons immediately when detected (after release), actions involving transitions and printer job every 5 seconds
 	if (ShortPress or LongPress) {
 		switch(State) {
 		case Relay_off: // 0
 			if (ShortPress) {
 				State = InitialState;
-				if (State == Relay_off) State = Switched_ON;
+				if (State == Relay_off) State = Waiting_for_print_activity;
 			} else {
 				State = Switched_ON;
 			}
@@ -1236,10 +1236,10 @@ void loop() {
 			} else if (LongPress) {
 				State = going_down;
 			}
-			
-			break;		
+
+			break;
 		case Waiting_for_print_activity_connected: // 3
-		case print_started : // 9			
+		case print_started : // 9
 			if (ShortPress) {
 				State = Switched_ON;
 			} else if (LongPress) {
@@ -1252,7 +1252,7 @@ void loop() {
 			} else if (LongPress) {
 				State = ready_for_shutting_down_extruder_HOT;
 			}
-			break;	
+			break;
 		case delayed_powering_relay_off : // 7
 			if (ShortPress) {
 				State = Switched_ON;
@@ -1264,7 +1264,7 @@ void loop() {
 			break;
 		};
 
-		
+
 	// Now interpret every 15 or 5 (configurable) seconds whether the states need to change because of Octoprint statistics
 	} else if (((Now - OctoprintTimer) > OctoprintInterval) and State_transition_checking_ok) {
 		#ifdef debug_
@@ -1275,22 +1275,22 @@ void loop() {
 		switch(State) {
 		case Waiting_for_print_activity: // 2
 			if (OctoprintRunning()) State = Waiting_for_print_activity_connected;
-			break;		
+			break;
 		case Waiting_for_print_activity_connected: // 3
 			if (OctoprintNotRunning(true)) State = Waiting_for_print_activity;
 			else if (OctoprintPrinting()) {
 				State = print_started;
 				Time_print_started = Now;
-			}				
+			}
 			break;
-		case print_started : // 9			
+		case print_started : // 9
 			if (OctoprintNotPrinting(true)) State = Waiting_for_print_activity_connected;							// 9->3
 			else if (((Now - Time_print_started) > MinJobTime) and OctoprintHot()) State = ready_for_shutting_down;	// 9->4
 			break;
 		case ready_for_shutting_down: //4
 //			if (OctoprintNotRunning()) State = delayed_powering_relay_off;											// 4->7
 			if (OctoprintNotPrinting()) State = ready_for_shutting_down_extruder_HOT;  							// 4->5
-			break;				
+			break;
 		case ready_for_shutting_down_extruder_HOT: // 5
 //			if (OctoprintNotRunning()) State = delayed_powering_relay_off;											// 5->7
 			if (OctoprintPrinting()) State = ready_for_shutting_down;											// 5->4
@@ -1299,7 +1299,7 @@ void loop() {
 				snprintf(Message,40,message_temperature,MaxExtruderTemperature);
 				api->octoPrintPrinterCommand(Message);
 			}
-			break;				
+			break;
 		case shutting_down_PI : // 6
 			if (OctoprintRunning()) {
 				if (OctoprintShutdown()) {																			// 6->7 (a)
@@ -1321,13 +1321,13 @@ void loop() {
 				State = delayed_powering_relay_off;
 				PowerOffRequested = Now;
 			}
-			break;			
+			break;
 		default:				// Do nothing
 			break;
 		}
 	}
 	// Now interpret states that need to change independently of button presses, wifi or Octoprint statistics
-	
+
 	switch(State) {
 	case delayed_powering_relay_off:
 		if ((Now - PowerOffRequested) > WaitPeriodForShutdown ) {
@@ -1339,24 +1339,24 @@ void loop() {
 		break;
 	default:				// Do nothing
 		break;
-	}		
-		
-	
+	}
+
+
 	//Set the next OctoprintInterval, may be shorted in the state change.
 	switch(State) {
 	case Relay_off: // 0
 	case Switched_ON: // 1
-	case Waiting_for_print_activity: // 2 
+	case Waiting_for_print_activity: // 2
 	case delayed_powering_relay_off : // 7
-	case going_down: // 8	
+	case going_down: // 8
 		OctoprintInterval = OctoprintInterval_NOT_running; // Poll slower (every minute)
-		break;	
+		break;
 	case Waiting_for_print_activity_connected: // 3
 	case ready_for_shutting_down: // 4
 	case ready_for_shutting_down_extruder_HOT: // 5
 	case shutting_down_PI: // 6
 		OctoprintInterval = OctoprintInterval_running; // Poll faster (every 5 seconds)
-		break;		
+		break;
 	default:				// Do nothing
 		break;
 	}
@@ -1373,10 +1373,10 @@ void loop() {
 		}
 	}
 	#endif
-	
+
 	//Take action for State changes
 	if (State != LastState ) {
-		
+
 		#ifdef debug_
 		Serial.print(F("State changed from "));
 		Serial.print(OctoplugoutState(LastState));
@@ -1388,20 +1388,20 @@ void loop() {
 		//Serial.println(LED_OFF_TIME[State]);
 
 	#endif
-		
+
 		// Only do an action "ONCE"
 		LastState = State;
 
 		//Set the relay
 		digitalWrite(PinRelay, (State == Relay_off) ? RELAY_OFF : RELAY_ON);
-		
+
 		#ifdef def_mqtt_server
 		// Publish new state
 		if (mqtt_connected and mqtt_active) PublishMQTT(s_mqtt_topic,topic_State,OctoplugoutState(State));
 		#endif
-			
+
 		// Force LED to reflect a new pattern.
-		TimerLED = 0;  
+		TimerLED = 0;
 
 		// Show debug_ information
 		#ifdef debug_
@@ -1458,21 +1458,21 @@ void loop() {
 			snprintf(Message,30,Message_announce_print);
 			api->octoPrintPrinterCommand(Message);
 			break;
-		case delayed_powering_relay_off : // 7		
-		case going_down: // 8		
+		case delayed_powering_relay_off : // 7
+		case going_down: // 8
 			OctoprintInterval = 200; // Poll faster (only ONCE)
-			break;		
+			break;
 		default:				// Do nothing
 			break;
 		}
 	}
-	
+
 	// Report the position through mqtt
 	#ifdef def_mqtt_server
 	if (mqtt_connected and mqtt_active) {
 		if (WiFi.status() == WL_CONNECTED) {
 			if (Now - TimeMQTTReported > mqtt_UpdateInterval) {
-				TimeMQTTReported = Now;			
+				TimeMQTTReported = Now;
 				switch (State) {
 				case Relay_off:
 				case Switched_ON:
@@ -1484,7 +1484,7 @@ void loop() {
 					break;
 				case Waiting_for_print_activity_connected:
 				case ready_for_shutting_down:
-				case ready_for_shutting_down_extruder_HOT:  
+				case ready_for_shutting_down_extruder_HOT:
 				case print_started:
 					if(api->getPrinterStatistics()){
 						#ifdef topic_PrintState
@@ -1498,10 +1498,10 @@ void loop() {
 						snprintf (msg, MSG_BUFFER_SIZE, "%.1f",api->printerStats.printerBedTempActual);
 						PublishMQTT(s_mqtt_topic,topic_BedTemp,msg);
 						#endif
-					}	
+					}
 					if(api->getPrintJob())	{  //Get the print job API endpoint
 						#ifdef topic_JobState
-						PublishMQTT(s_mqtt_topic,topic_JobState,api->printJob.printerState.c_str());				
+						PublishMQTT(s_mqtt_topic,topic_JobState,api->printJob.printerState.c_str());
 						#endif
 						#ifdef topic_JobProgress
 						snprintf (msg, MSG_BUFFER_SIZE, "%.1f",api->printJob.progressCompletion);
@@ -1535,7 +1535,7 @@ bool OctoprintNotPrinting(bool Default) {
 bool OctoprintPrinting(bool Default)
 {
 	if (State == Relay_off) return false;
-	
+
 	if (WiFi.status() == WL_CONNECTED) {
 		if(api->getPrinterStatistics()) {
 			if (api->printerStats.printerStatePrinting == 1) {
@@ -1552,7 +1552,7 @@ bool OctoprintPrinting(bool Default)
 				#ifdef debug_
 				//Serial.println(F("Octoprint is PAUSING"));
 				#endif
-				return true;			
+				return true;
 			} else if (api->printerStats.printerStateerror == 1) {
 				#ifdef debug_
 				//Serial.println(F("Octoprint is Error"));
@@ -1562,7 +1562,7 @@ bool OctoprintPrinting(bool Default)
 				#ifdef debug_
 				//Serial.println(F("Octoprint is closedOrError"));
 				#endif
-				return true;			
+				return true;
 			} else if (api->printerStats.printerStatefinishing == 1) {
 				#ifdef debug_
 				//Serial.println(F("Octoprint is finishing"));
@@ -1572,8 +1572,8 @@ bool OctoprintPrinting(bool Default)
 				#ifdef debug_
 				//Serial.println(F("Octoprint is resuming"));
 				#endif
-				return true;				
-			} else { 	
+				return true;
+			} else {
 				Serial.println(F("Octoprint is not printing"));
 				return false;
 			}
@@ -1624,15 +1624,15 @@ bool OctoprintHot(bool Default) {
 bool OctoprintCool(bool Default) {
 	return OctoprintTemperatureTest(MaxExtruderTemperature, Default);
 }
-	
+
 bool OctoprintTemperatureTest(float ExtruderTemp, bool Default)
 {
 	#ifdef debug_
 	Serial.println(F("TEST whether extruder is cold"));
 	#endif
-	
+
 	if (State == Relay_off) return true;
-	
+
 	if (WiFi.status() == WL_CONNECTED) {
 		if (api->getPrinterStatistics()) {
 			#ifdef debug_
