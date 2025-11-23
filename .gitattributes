@@ -1,0 +1,2 @@
+.gitattributes !filter !diff
+OctoPlugout/OctoPlugout.config.h filter=git-crypt diff=git-crypt
